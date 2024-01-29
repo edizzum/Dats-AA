@@ -1179,8 +1179,8 @@ const userOperation: Partial<UserOperation> = {
 
 // SPONSOR THE USEROPERATION USING THE VERIFYING PAYMASTER
 const result = await paymasterClient.sponsorUserOperation({
-userOperation: userOperation as UserOperation,
-entryPoint: entryPointAddress,
+    userOperation: userOperation as UserOperation,
+    entryPoint: entryPointAddress,
 });
 
 userOperation.preVerificationGas = result.preVerificationGas;
@@ -1190,10 +1190,10 @@ userOperation.paymasterAndData = result.paymasterAndData;
 
 // SIGN THE USEROPERATION
 const signature = await signUserOperationHashWithECDSA({
-account: signer,
-userOperation: userOperation as UserOperation,
-chainId: sepolia.id,
-entryPoint: entryPointAddress,
+    account: signer,
+    userOperation: userOperation as UserOperation,
+    chainId: sepolia.id,
+    entryPoint: entryPointAddress,
 });
 
 userOperation.signature = signature;
