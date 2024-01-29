@@ -1156,10 +1156,19 @@ const nonceOfAccount = await getAccountNonce(publicClient, {
     entryPoint: entryPointAddress,
 });
 
+let dynamicInitCode;
+
+if (nonceOfAccount === 0n) {
+    console.log("Sender address is 0x, creating...");
+    dynamicInitCode = initCode;
+} else {
+    dynamicInitCode = "0x" as `0x${string}`;
+}
+
 const userOperation: Partial<UserOperation> = {
     sender: senderAddress,
     nonce: nonceOfAccount,
-    initCode: "0x",
+    initCode: dynamicInitCode,
     callData: approveCallData,
     maxFeePerGas: gasPriceResult.fast.maxFeePerGas,
     maxPriorityFeePerGas: gasPriceResult.fast.maxPriorityFeePerGas,
@@ -1168,29 +1177,25 @@ const userOperation: Partial<UserOperation> = {
         "0xfffffffffffffffffffffffffffffff0000000000000000000000000000000007aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1c",
 };
 
-if (nonceOfAccount) {
-  // SPONSOR THE USEROPERATION USING THE VERIFYING PAYMASTER
-  const result = await paymasterClient.sponsorUserOperation({
-    userOperation: userOperation as UserOperation,
-    entryPoint: entryPointAddress,
-  });
+// SPONSOR THE USEROPERATION USING THE VERIFYING PAYMASTER
+const result = await paymasterClient.sponsorUserOperation({
+userOperation: userOperation as UserOperation,
+entryPoint: entryPointAddress,
+});
 
-  userOperation.preVerificationGas = result.preVerificationGas;
-  userOperation.verificationGasLimit = result.verificationGasLimit;
-  userOperation.callGasLimit = result.callGasLimit;
-  userOperation.paymasterAndData = result.paymasterAndData;
+userOperation.preVerificationGas = result.preVerificationGas;
+userOperation.verificationGasLimit = result.verificationGasLimit;
+userOperation.callGasLimit = result.callGasLimit;
+userOperation.paymasterAndData = result.paymasterAndData;
 
-  // SIGN THE USEROPERATION
-  const signature = await signUserOperationHashWithECDSA({
-    account: signer,
-    userOperation: userOperation as UserOperation,
-    chainId: sepolia.id,
-    entryPoint: entryPointAddress,
-  });
+// SIGN THE USEROPERATION
+const signature = await signUserOperationHashWithECDSA({
+account: signer,
+userOperation: userOperation as UserOperation,
+chainId: sepolia.id,
+entryPoint: entryPointAddress,
+});
 
-  userOperation.signature = signature;
-  const outputOfUserOperation = await submitUserOperation(userOperation as UserOperation);
-    console.log(outputOfUserOperation);
-} else {
-  console.log("Deployment UserOperation previously submitted, skipping...");
-}
+userOperation.signature = signature;
+const outputOfUserOperation = await submitUserOperation(userOperation as UserOperation);
+console.log(outputOfUserOperation);
