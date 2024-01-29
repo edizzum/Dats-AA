@@ -1,1 +1,1 @@
-# Dats-AA2
+To run the .ts file: npm start
