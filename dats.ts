@@ -139,6 +139,51 @@ const generateCreateAccountCallData = ({ email }: { email: string }) => {
     return callData;
 };
 
+const generateGetAddressCallData = ({ _owner, email }: { _owner: string, email: string }) => {
+    let hexString = "";
+    hexString = "0x" + Buffer.from(email, "utf8").toString("hex");
+    const salt = hexString;
+    const ownerAddress = _owner as `0x${string}`;
+    const getAddressData = encodeFunctionData({
+        abi: [
+            {
+                inputs: [
+                    { name: "owner", type: "address" },
+                    { name: "salt", type: "uint256" },
+                ],
+                name: "getAddress",
+                outputs: [{ name: "", type: "address" }],
+                stateMutability: "nonpayable",
+                type: "function",
+            },
+        ],
+        args: [ownerAddress, BigInt(salt)],
+    });
+
+    const to = simpleAccountFactoryAddress;
+    const value = 0n;
+    const data = getAddressData;
+
+    const callData = encodeFunctionData({
+        abi: [
+            {
+                inputs: [
+                    { name: "dest", type: "address" },
+                    { name: "value", type: "uint256" },
+                    { name: "func", type: "bytes" },
+                ],
+                name: "execute",
+                outputs: [],
+                stateMutability: "nonpayable",
+                type: "function",
+            },
+        ],
+        args: [to, value, data],
+    });
+
+    return callData;
+};
+
 const generateGetAllUserDDosSettingsCallData = () => {
     const getAllUserDDosSettingsData = encodeFunctionData({
         abi: [
@@ -1144,10 +1189,6 @@ const submitUserOperation = async (userOperation: UserOperation) => {
 
 // const approveCallData = genereteApproveCallData(usdcTokenAddress, erc20PaymasterAddress)
 
-const approveCallData = generateCreateAccountCallData({
-    email: "lolumsu@gmail.com",
-});
-
 // FILL OUT THE REMAINING USEROPERATION VALUES
 const gasPriceResult = await bundlerClient.getUserOperationGasPrice();
 
@@ -1164,6 +1205,16 @@ if (nonceOfAccount === 0n) {
 } else {
     dynamicInitCode = "0x" as `0x${string}`;
 }
+
+
+const approveCallData = generateCreateAccountCallData({
+    email: "lolumsu@gmail.com",
+});
+
+const getAddressCallData = generateGetAddressCallData({
+    _owner: signer.address,
+    email: "lolumsu@gmail.com",
+});
 
 const userOperation: Partial<UserOperation> = {
     sender: senderAddress,
